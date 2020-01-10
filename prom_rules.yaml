@@ -1,0 +1,41 @@
+groups:
+  - name: test alerts
+    rules:
+      # - alert: Scrooge workers length metrics
+      #   expr: avg(scrooge_workers_queue_length) > 5000
+      #   for: 2m
+      #   labels:
+      #     severity: slack
+      #     team: postpayments
+      #     cluster: stage-green
+      #   annotations:
+      #     identifier: "{{ $labels.instance }}"
+      #     description: Scrooge worker queue length increased
+      # - alert: Scrooge api response code
+      #   expr: sum(rate(scrooge_http_request_duration_seconds_count{code!~"2.."}[5m])) * 60 > 1
+      #   for: 5m
+      #   labels:
+      #     severity: critical
+      #     team: postpayments
+      #   annotations:
+      #     identifier: "{{ $labels.instance }}"
+      #     description: reaponse codes,  values={{$value}}
+      - alert: FTS RESPONSE TIME
+        expr: sum(increase(fts_response_code{http_status=~"4.."}[2m])) / sum(increase(fts_response_code{}[2m])) * 100 > 0
+        for: 2m
+        labels:
+          severity: critical
+          team: FTS
+        annotations:
+          identifier: "{{ $labels.instance }}"
+          description: response code is "{{ $value }}"
+
+      - alert: "[Infra][DevOps][stage-green]container restarts"
+        expr: sum(increase(kube_pod_container_status_restarts_total{}[20m])) by (pod,namespace) > 4
+        for: 2m
+        labels:
+          severity: critical
+          team: Infra
+        annotations:
+          identifier: pod "{{ $labels.pod }}" , namespace = "{{ $labels.namespace }}"
+          description: The pod "{{ $labels.pod }}" restarted "{{ $value }}" times
